@@ -2,18 +2,15 @@
 /.cache/
 /dist/
 /build/
-/lib/PyYAML.egg-info/*
 /wheelhouse/*
-/yaml/_yaml.c
 MANIFEST
 **/*.so
 **/*.dylib
-**/*.pyd
 
-
-# cached Python binaries
-*.py[cdo]
-_pycache_/*
+# Go build and test outputs
+/bin/
+*.test
+*.out
 
 # local IDE state
 /.idea/*

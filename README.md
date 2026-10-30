@@ -1,69 +1,57 @@
 PyYAML
 ======
 
-A full-featured YAML processing framework for Python
+A full-featured YAML processing framework for Go
+
+This is the Go library that replaces the Python package this repository used to hold. It is a port of
+PyYAML's pure Python implementation: the reader, scanner, parser, composer, constructor, resolver,
+representer, serializer and emitter, with the Python 3.12 value semantics the library relies on.
 
 ## Installation
 
-To install, type `python setup.py install`.
+    go get github.com/yaml/pyyaml-go
 
-By default, the `setup.py` script checks whether LibYAML is installed and if
-so, builds and installs LibYAML bindings.
-To skip the check and force installation of LibYAML bindings, use the option
-`--with-libyaml`: `python setup.py --with-libyaml install`.
-To disable the check and skip building and installing LibYAML bindings, use
-`--without-libyaml`: `python setup.py --without-libyaml install`.
+The module has no dependencies outside the Go standard library.
 
-When LibYAML bindings are installed, you may use fast LibYAML-based parser and
-emitter as follows:
+## Usage
 
-    >>> yaml.load(stream, Loader=yaml.CLoader)
-    >>> yaml.dump(data, Dumper=yaml.CDumper)
+Load a document:
 
-If you don't trust the input YAML stream, you should use:
+    value, err := yaml.SafeLoad("a: 1\nb: [x, y]\n")
 
-    >>> yaml.safe_load(stream)
+Dump a value:
+
+    text, err := yaml.Dump(value, yaml.NewDumpOptions())
+
+`Load`, `LoadAll`, `Compose`, `ComposeAll` take a `Loader` (`BaseLoader`, `SafeLoader` or
+`FullLoader`); `Dump`, `DumpAll`, `Serialize`, `SerializeAll` and `Emit` take `DumpOptions`, whose
+fields are the keyword arguments of the Python functions and whose zero value, through
+`NewDumpOptions`, is their defaults. If you do not trust the input, use `SafeLoad`.
+
+`Scan` and `Parse` give the tokens and the events of a stream, and `Repr` renders any loaded value as
+Python's `repr()` does.
+
+## Values
+
+A YAML document loads into the Go values that stand for Python's: `string` for `str`, `*big.Int` for
+`int`, `float64` for `float`, `bool`, `nil` for `None`, `[]byte` for `bytes`, and `*List`, `*Tuple`,
+`*Dict`, `*PySet`, `*Date`, `*DateTime` and `*Complex` for the containers and the other types. `*Dict`
+keeps its insertion order and compares keys as Python does, so `1`, `1.0` and `true` are one key. Two
+references to one of the pointer types are one object: an anchor and its aliases load as one value, and
+a value shared by identity is dumped once with an anchor.
 
 ## Testing
 
-PyYAML includes a comprehensive test suite.
+    go test ./...
 
-To run the complete local test suite, type:
-
-    make test
-
-This creates a local Python environment, runs the pure Python tests, builds a
-local copy of LibYAML, and then runs the LibYAML extension tests. The local
-LibYAML build is pinned by `LIBYAML-REF`, which defaults to `0.2.5`.
-
-To run only one test mode:
-
-    make test-python
-    make test-libyaml
-
-To test with a specific Python version:
-
-    make test PYTHON-VERSION=3.13.5
+The tests in `recorded_test.go` and `internal/*/recorded_test.go` are recordings of the original Python
+library and of CPython 3.12 themselves; they are generated, not written by hand.
 
 ## Further Information
 
-* For more information, check the
-  [PyYAML homepage](https://github.com/yaml/pyyaml).
+* [PyYAML homepage](https://github.com/yaml/pyyaml).
 
 * [PyYAML tutorial and reference](http://pyyaml.org/wiki/PyYAMLDocumentation).
 
-* Discuss PyYAML with the maintainers on
-  Matrix at https://matrix.to/#/#pyyaml:yaml.io or
-  IRC #pyyaml irc.libera.chat
-
 * Submit bug reports and feature requests to the
   [PyYAML bug tracker](https://github.com/yaml/pyyaml/issues).
-
-## License
-
-The PyYAML module was written by Kirill Simonov <xi@resolvent.net>.
-It is currently maintained by the YAML and Python communities.
-
-PyYAML is released under the MIT license.
-
-See the file LICENSE for more details.
